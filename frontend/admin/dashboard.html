@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Дашборд — Адмін панель</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header class="site-header admin-header">
+    <div class="container header-row">
+      <div class="logo">🏠 Адмін панель</div>
+      <div class="header-actions">
+        <a href="/" target="_blank" class="btn btn-secondary btn-sm">Переглянути сайт</a>
+        <button id="logoutBtn" class="btn btn-outline btn-sm">Вийти</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container admin-main">
+    <div class="dashboard-toolbar">
+      <h1 class="page-title">Квартири</h1>
+      <button class="btn btn-primary" id="addAptBtn">+ Додати квартиру</button>
+    </div>
+
+    <div id="loader" class="loader"><div class="spinner"></div></div>
+
+    <div class="table-wrapper" id="tableWrapper" style="display:none">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Фото</th>
+            <th>Адреса</th>
+            <th>Кімнати</th>
+            <th>Площа</th>
+            <th>Поверх</th>
+            <th>Телефон</th>
+            <th>Дії</th>
+          </tr>
+        </thead>
+        <tbody id="aptTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+
+    <div id="emptyState" class="empty-state" style="display:none">
+      <p>Немає квартир. Додайте першу!</p>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Додати квартиру</h2>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="aptForm" novalidate>
+          <input type="hidden" id="aptId" />
+
+          <fieldset class="form-section">
+            <legend>Адреса</legend>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Місто *</label>
+                <input type="text" id="city" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Область *</label>
+                <input type="text" id="region" class="form-input" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label class="form-label">Вулиця *</label>
+                <input type="text" id="street" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Будинок *</label>
+                <input type="text" id="building" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Квартира *</label>
+                <input type="text" id="apt_number" class="form-input" required />
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>Характеристики</legend>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Площа (м²) *</label>
+                <input type="number" id="area" class="form-input" min="1" step="0.1" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Кімнати *</label>
+                <input type="number" id="rooms" class="form-input" min="1" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Поверх *</label>
+                <input type="number" id="floor" class="form-input" min="1" required />
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>Контакт</legend>
+            <div class="form-group">
+              <label class="form-label">Номер телефону *</label>
+              <input type="tel" id="phone" class="form-input" placeholder="+380..." required />
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>Додатково</legend>
+            <div class="form-group">
+              <label class="form-label">Додаткові фішки</label>
+              <textarea id="features" class="form-input form-textarea" rows="4"
+                placeholder="Опишіть переваги квартири: меблі, техніка, паркінг..."></textarea>
+            </div>
+          </fieldset>
+
+          <!-- Image upload (shown after apartment is created) -->
+          <fieldset class="form-section" id="imageSection" style="display:none">
+            <legend>Фотографії</legend>
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="imageFiles" multiple accept="image/*" style="display:none" />
+              <div class="upload-placeholder" id="uploadPlaceholder">
+                <span class="upload-icon">📷</span>
+                <p>Перетягніть фото сюди або <button type="button" class="link-btn" id="browseBtn">виберіть файли</button></p>
+                <p class="upload-hint">JPG, PNG, WebP — до 16 МБ кожне</p>
+              </div>
+            </div>
+            <div class="images-preview" id="imagesPreview"></div>
+          </fieldset>
+
+          <div class="form-error" id="formError" style="display:none"></div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelBtn">Скасувати</button>
+        <button class="btn btn-primary" id="saveBtn">Зберегти</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>

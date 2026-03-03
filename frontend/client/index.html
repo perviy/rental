@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Оренда квартир</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="logo">🏠 Оренда квартир</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Filters -->
+    <section class="filters">
+      <h1 class="page-title">Знайдіть свою квартиру</h1>
+      <form class="filter-form" id="filterForm">
+        <input type="text" name="city" placeholder="Місто" class="filter-input" />
+        <select name="rooms" class="filter-input">
+          <option value="">Будь-яка к-ть кімнат</option>
+          <option value="1">1 кімната</option>
+          <option value="2">2 кімнати</option>
+          <option value="3">3 кімнати</option>
+          <option value="4">4+ кімнати</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Пошук</button>
+        <button type="button" class="btn btn-secondary" id="resetBtn">Скинути</button>
+      </form>
+    </section>
+
+    <!-- Apartments grid -->
+    <section id="apartmentsGrid" class="apartments-grid"></section>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination"></div>
+
+    <!-- Loading / empty state -->
+    <div id="emptyState" class="empty-state" style="display:none">
+      <p>Квартир не знайдено</p>
+    </div>
+    <div id="loader" class="loader">
+      <div class="spinner"></div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">© 2024 Оренда квартир</div>
+  </footer>
+
+  <script src="/js/client.js"></script>
+</body>
+</html>
