@@ -142,6 +142,23 @@ body {
   border-color: var(--color-primary);
 }
 
+/* ─── Map ────────────────────────────────────────────────────────────────── */
+.map-section {
+  margin-bottom: 2rem;
+}
+
+#map {
+  height: 420px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--color-border);
+  box-shadow: var(--shadow);
+  z-index: 1;
+}
+
+@media (max-width: 640px) {
+  #map { height: 280px; }
+}
+
 /* ─── Apartments Grid ────────────────────────────────────────────────────── */
 .apartments-grid {
   display: grid;
@@ -355,6 +372,29 @@ body {
   transition: background var(--transition);
 }
 .call-btn:hover { background: rgba(255,255,255,0.3); }
+
+.detail-map-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.detail-map-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+#detailMap {
+  height: 320px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--color-border);
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 640px) {
+  #detailMap { height: 220px; }
+}
 
 .features-section {
   margin-top: 2rem;

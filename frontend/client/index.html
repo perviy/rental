@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Оренда квартир</title>
   <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.css" />
 </head>
 <body>
   <header class="site-header">
@@ -31,6 +33,11 @@
       </form>
     </section>
 
+    <!-- Map -->
+    <section class="map-section">
+      <div id="map"></div>
+    </section>
+
     <!-- Apartments grid -->
     <section id="apartmentsGrid" class="apartments-grid"></section>
 
@@ -50,6 +57,8 @@
     <div class="container">© 2024 Оренда квартир</div>
   </footer>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.js"></script>
   <script src="/js/client.js"></script>
 </body>
 </html>

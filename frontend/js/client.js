@@ -17,6 +17,7 @@ let currentPage = 1;
 let currentFilters = {};
 
 function initListPage() {
+  try { initMap(); } catch (e) { console.warn('Map init failed:', e); }
   loadApartments(1, {});
 
   document.getElementById('filterForm').addEventListener('submit', (e) => {
@@ -48,6 +49,7 @@ async function loadApartments(page, filters) {
 
     renderApartments(data.apartments);
     renderPagination(data.pages, page);
+    addMapMarkers(data.apartments);
   } catch (err) {
     console.error(err);
     document.getElementById('apartmentsGrid').innerHTML =
@@ -120,6 +122,110 @@ function renderPagination(totalPages, current) {
   el.innerHTML = html;
 }
 
+// ── Map ───────────────────────────────────────────────────────────────────
+let map = null;
+let aptMarkers = [];
+let markerBatchId = 0;
+const geoCache = {};
+
+function initMap() {
+  map = L.map('map').setView([49.0, 31.5], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+  }).addTo(map);
+
+  if (typeof L.Control.geocoder === 'function') {
+    L.Control.geocoder({
+      defaultMarkGeocode: false,
+      placeholder: 'Пошук адреси...',
+      errorMessage: 'Адресу не знайдено',
+    }).on('markgeocode', (e) => {
+      map.fitBounds(e.geocode.bbox);
+    }).addTo(map);
+  }
+}
+
+function clearAptMarkers() {
+  aptMarkers.forEach(m => map.removeLayer(m));
+  aptMarkers = [];
+}
+
+async function geocodeAddress(key) {
+  if (geoCache[key]) return geoCache[key];
+
+  const stored = localStorage.getItem('geo:' + key);
+  if (stored) {
+    try {
+      const coords = JSON.parse(stored);
+      geoCache[key] = coords;
+      return coords;
+    } catch (_) {}
+  }
+
+  try {
+    const q = encodeURIComponent(key + ', Україна');
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&accept-language=uk`
+    );
+    const data = await res.json();
+    if (data.length > 0) {
+      const coords = { lat: +data[0].lat, lng: +data[0].lon };
+      geoCache[key] = coords;
+      localStorage.setItem('geo:' + key, JSON.stringify(coords));
+      return coords;
+    }
+  } catch (e) {
+    console.warn('Geocode failed:', key);
+  }
+  return null;
+}
+
+async function addMapMarkers(apartments) {
+  if (!map) return;
+  clearAptMarkers();
+  const batchId = ++markerBatchId;
+  let firstSet = false;
+
+  for (let i = 0; i < apartments.length; i++) {
+    if (batchId !== markerBatchId) return;
+
+    const apt = apartments[i];
+    const key = `вул. ${apt.street} ${apt.building}, ${apt.city}`;
+
+    const fromCache = geoCache[key] || (() => {
+      const s = localStorage.getItem('geo:' + key);
+      return s ? JSON.parse(s) : null;
+    })();
+
+    let coords = fromCache;
+    if (!coords) {
+      if (i > 0) await new Promise(r => setTimeout(r, 350));
+      if (batchId !== markerBatchId) return;
+      coords = await geocodeAddress(key);
+    } else {
+      geoCache[key] = coords;
+    }
+
+    if (!coords || batchId !== markerBatchId || !map) continue;
+
+    const marker = L.marker([coords.lat, coords.lng]).bindPopup(`
+      <div style="min-width:190px;line-height:1.5">
+        <strong>вул. ${escapeHtml(apt.street)}, буд. ${escapeHtml(apt.building)}</strong><br>
+        <span style="color:#64748b;font-size:.85em">${escapeHtml(apt.city)}, ${escapeHtml(apt.region)} обл.</span><br>
+        <span>${apt.rooms} кімн. · ${apt.area} м²</span><br>
+        <a href="/client/apartment.html?id=${apt.id}" style="color:#2563eb;font-weight:600">Детальніше →</a>
+      </div>`).addTo(map);
+
+    aptMarkers.push(marker);
+
+    if (!firstSet) {
+      map.setView([coords.lat, coords.lng], 13);
+      firstSet = true;
+    }
+  }
+}
+
 function setLoading(on) {
   document.getElementById('loader').style.display = on ? 'flex' : 'none';
 }
@@ -141,6 +247,7 @@ async function initDetailPage() {
     document.title = `вул. ${apt.street}, буд. ${apt.building} — Оренда`;
     container.innerHTML = renderDetail(apt);
     initGallery(apt.images);
+    initDetailMap(apt);
   } catch {
     container.innerHTML = '<p>Квартиру не знайдено</p>';
   }
@@ -208,7 +315,35 @@ function renderDetail(apt) {
           </div>
         </div>
       </div>
+      <div class="detail-map-section">
+        <h3 class="detail-map-title">Розташування</h3>
+        <div id="detailMap"></div>
+      </div>
     </div>`;
+}
+
+async function initDetailMap(apt) {
+  const el = document.getElementById('detailMap');
+  if (!el || typeof L === 'undefined') return;
+
+  const key = `вул. ${apt.street} ${apt.building}, ${apt.city}`;
+  const coords = await geocodeAddress(key);
+
+  if (!coords) {
+    el.parentElement.style.display = 'none';
+    return;
+  }
+
+  const detailMap = L.map('detailMap').setView([coords.lat, coords.lng], 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+  }).addTo(detailMap);
+
+  L.marker([coords.lat, coords.lng])
+    .bindPopup(`<strong>вул. ${escapeHtml(apt.street)}, буд. ${escapeHtml(apt.building)}</strong><br>${escapeHtml(apt.city)}, ${escapeHtml(apt.region)} обл.`)
+    .addTo(detailMap)
+    .openPopup();
 }
 
 function initGallery(images) {
